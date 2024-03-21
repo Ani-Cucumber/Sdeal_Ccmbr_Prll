@@ -71,7 +71,7 @@ public class SearchScreen extends Wrap {
 
     public SearchScreen()
     {
-        PageFactory.initElements(new AppiumFieldDecorator(driver),this);
+        PageFactory.initElements(new AppiumFieldDecorator(getDriver()),this);
     }
 
     @And("user taps on Filter")

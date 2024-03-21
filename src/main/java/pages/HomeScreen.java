@@ -31,7 +31,7 @@ public class HomeScreen extends Wrap {
 
     public HomeScreen()
     {
-        PageFactory.initElements(new AppiumFieldDecorator(driver),this);
+        PageFactory.initElements(new AppiumFieldDecorator(getDriver()),this);
     }
 
     @Given("user is at Homescreen")

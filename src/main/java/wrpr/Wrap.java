@@ -34,12 +34,16 @@ import java.util.HashMap;
 
 public class Wrap extends AbstractTestNGCucumberTests {
 
-    public static AppiumDriver driver;
+    public static ThreadLocal<AppiumDriver> driver = new ThreadLocal<AppiumDriver>();
     public static final int MAX_SCROLL = 10;
     public AppiumDriverLocalService service;
     public AppiumServiceBuilder builder;
     public String serverURL;
     public String appserver;
+
+    public static synchronized AppiumDriver getDriver() {
+        return driver.get();
+    }
 
 
     public void startAppiumServer() {
@@ -116,17 +120,17 @@ public class Wrap extends AbstractTestNGCucumberTests {
                 dc.setCapability("autoGrantPermissions", true);
         /*        URL url= new URL("http://127.0.0.1:4723/wd/hub");
                 driver= new AndroidDriver(url,dc);
-        */      driver= new AndroidDriver(new URI(serverURL).toURL(), dc);
+        */      driver.set(new AndroidDriver(new URI(serverURL).toURL(),dc));
             } else if (platformName.equalsIgnoreCase("iOS")) {
                 // Comment the below line based on need
                 dc.setCapability("autoAcceptAlerts", true);
           //      URL url= new URL("http://127.0.0.1:4723/wd/hub");
                 //driver=(new IOSDriver(new URI(serverURL).toURL(), dc));
            //     driver= new IOSDriver(url,dc);
-                driver = new IOSDriver(new URI(serverURL).toURL(),dc);
+                driver.set(new IOSDriver(new URI(serverURL).toURL(), dc));
             }
 
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+            getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
 
 
         } catch (Exception e) {
@@ -140,24 +144,24 @@ public class Wrap extends AbstractTestNGCucumberTests {
             switch (locator) {
                 case "id":
 //                    return getDriver().findElement(AppiumBy.id(locValue));
-                    return driver.findElement(AppiumBy.xpath("//*[@resource-id='" + locValue + "' or @id='" + locValue + "']"));
+                    return getDriver().findElement(AppiumBy.xpath("//*[@resource-id='" + locValue + "' or @id='" + locValue + "']"));
                 case "name":
 //					return getDriver().findElement(AppiumBy.name(locValue));
-                    return driver.findElement(AppiumBy.xpath("//*[@name='" + locValue + "']"));
+                    return getDriver().findElement(AppiumBy.xpath("//*[@name='" + locValue + "']"));
                 case "className":
-                    return driver.findElement(AppiumBy.className(locValue));
+                    return getDriver().findElement(AppiumBy.className(locValue));
                 case "link":
-                    return driver.findElement(AppiumBy.linkText(locValue));
+                    return getDriver().findElement(AppiumBy.linkText(locValue));
                 case "partialLink":
-                    return driver.findElement(AppiumBy.partialLinkText(locValue));
+                    return getDriver().findElement(AppiumBy.partialLinkText(locValue));
                 case "tag":
-                    return driver.findElement(AppiumBy.tagName(locValue));
+                    return getDriver().findElement(AppiumBy.tagName(locValue));
                 case "css":
-                    return driver.findElement(AppiumBy.cssSelector(locValue));
+                    return getDriver().findElement(AppiumBy.cssSelector(locValue));
                 case "xpath":
-                    return driver.findElement(AppiumBy.xpath(locValue));
+                    return getDriver().findElement(AppiumBy.xpath(locValue));
                 case "accessibilityId":
-                    return driver.findElement(AppiumBy.accessibilityId(locValue));
+                    return getDriver().findElement(AppiumBy.accessibilityId(locValue));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -191,7 +195,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
             sequence.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
             sequence.addAction(finger.createPointerMove(Duration.ofSeconds(2), PointerInput.Origin.viewport(), endX, endY));
             sequence.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-            driver.perform(Collections.singletonList(sequence));
+            getDriver().perform(Collections.singletonList(sequence));
             return true;
         } catch (Exception e) {
             return false;
@@ -210,7 +214,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
         doubleTap.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         doubleTap.addAction(new Pause(finger, Duration.ofMillis(100)));
         doubleTap.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        driver.perform(Collections.singletonList(doubleTap));
+        getDriver().perform(Collections.singletonList(doubleTap));
     }
 
     // To long press in application
@@ -221,14 +225,15 @@ public class Wrap extends AbstractTestNGCucumberTests {
         longPress.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
         longPress.addAction(new Pause(finger, Duration.ofMillis(2000)));
         longPress.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        driver.perform(Collections.singletonList(longPress));
+        getDriver().perform(Collections.singletonList(longPress));
+        System.out.println();
     }
 
     // To pinch in application
     public void pinchInApp() {
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
-        int maxY = driver.manage().window().getSize().getHeight();
-        int maxX = driver.manage().window().getSize().getWidth();
+        getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+        int maxY = getDriver().manage().window().getSize().getHeight();
+        int maxX = getDriver().manage().window().getSize().getWidth();
         PointerInput finger1 = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
         Sequence a = new Sequence(finger1, 1);
         a.addAction(finger1.createPointerMove(Duration.ofSeconds(0), PointerInput.Origin.viewport(), (int) (maxX * 0.75),
@@ -245,13 +250,13 @@ public class Wrap extends AbstractTestNGCucumberTests {
         b.addAction(finger2.createPointerMove(Duration.ofSeconds(1), PointerInput.Origin.viewport(), (int) (maxX * 0.5),
                 (int) (maxY * 0.5)));
         b.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        driver.perform(Arrays.asList(a, b));
+        getDriver().perform(Arrays.asList(a, b));
     }
 
     // To zoom in application
     public void zoomInApp() {
-        int maxY = driver.manage().window().getSize().getHeight();
-        int maxX = driver.manage().window().getSize().getWidth();
+        int maxY = getDriver().manage().window().getSize().getHeight();
+        int maxX = getDriver().manage().window().getSize().getWidth();
         PointerInput finger1 = new PointerInput(PointerInput.Kind.TOUCH, "lokesh-finger1");
         Sequence a = new Sequence(finger1, 1);
         a.addAction(finger1.createPointerMove(Duration.ofSeconds(0), PointerInput.Origin.viewport(), (int) (maxX * 0.5),
@@ -268,11 +273,11 @@ public class Wrap extends AbstractTestNGCucumberTests {
         b.addAction(finger2.createPointerMove(Duration.ofSeconds(1), PointerInput.Origin.viewport(), (int) (maxX * 0.25),
                 (int) (maxY * 0.75)));
         b.addAction(finger2.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-        driver.perform(Arrays.asList(a, b));
+        getDriver().perform(Arrays.asList(a, b));
     }
 
     private boolean swipeUpInApp() {
-        Dimension size = driver.manage().window().getSize();
+        Dimension size = getDriver().manage().window().getSize();
         int startX = (int) (size.getWidth() * 0.5);
         int startY = (int) (size.getHeight() * 0.8);
         int endX = (int) (size.getWidth() * 0.5);
@@ -282,7 +287,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
 
     // To scroll down in application
     private boolean swipeDownInApp() {
-        Dimension size = driver.manage().window().getSize();
+        Dimension size = getDriver().manage().window().getSize();
         int startX = (int) (size.getWidth() * 0.5);
         int startY = (int) (size.getHeight() * 0.2);
         int endX = (int) (size.getWidth() * 0.5);
@@ -292,7 +297,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
 
     // To scroll left in application
     private boolean swipeLeftInApp() {
-        Dimension size = driver.manage().window().getSize();
+        Dimension size = getDriver().manage().window().getSize();
         int startX = (int) (size.getWidth() * 0.8);
         int startY = (int) (size.getHeight() * 0.5);
         int endX = (int) (size.getWidth() * 0.2);
@@ -302,7 +307,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
 
     // To scroll right in application
     private boolean swipeRightInApp() {
-        Dimension size = driver.manage().window().getSize();
+        Dimension size = getDriver().manage().window().getSize();
         int startX = (int) (size.getWidth() * 0.2);
         int startY = (int) (size.getHeight() * 0.5);
         int endX = (int) (size.getWidth() * 0.8);
@@ -401,7 +406,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
     public void closeApp() {
         if (driver != null) {
             try {
-                driver.quit();
+                getDriver().quit();
             } catch (Exception ignored) {
             }
         }
@@ -441,7 +446,7 @@ public class Wrap extends AbstractTestNGCucumberTests {
     }
 
     public void showNotificationMenu() {
-        ((AndroidDriver) driver).openNotifications();
+        ((AndroidDriver) getDriver()).openNotifications();
     }
 
     public void hideNotificationMenu() {
@@ -469,19 +474,19 @@ public class Wrap extends AbstractTestNGCucumberTests {
     }
 
     public boolean deleteChromeCookies() {
-        driver.manage().deleteAllCookies();
+        getDriver().manage().deleteAllCookies();
         return true;
     }
 
 
     public void waitForVisibility(WebElement e)
     {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(70));
+        WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(70));
         wait.until(ExpectedConditions.visibilityOf(e));
     }
 
     public void waitForExplicitVisibility(WebElement e){
-        Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+        Wait<WebDriver> wait = new FluentWait<WebDriver>(getDriver())
                 .withTimeout(Duration.ofSeconds(30))
                 .pollingEvery(Duration.ofSeconds(5))
                 .ignoring(NoSuchElementException.class);

@@ -46,7 +46,7 @@ public class ProfileScreen extends Wrap {
     protected WebElement RAT;
 
     public ProfileScreen() {
-    PageFactory.initElements(new AppiumFieldDecorator(driver),this);
+    PageFactory.initElements(new AppiumFieldDecorator(getDriver()),this);
     }
 
     @And("taps on Signup button")

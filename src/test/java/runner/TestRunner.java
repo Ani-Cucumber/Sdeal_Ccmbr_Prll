@@ -42,7 +42,7 @@ public class TestRunner extends Wrap {
     @AfterStep
     public void afterEachStep(Scenario scenario) {
         if (scenario.isFailed()) {
-            byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
+            byte[] screenshot = getDriver().getScreenshotAs(OutputType.BYTES);
             scenario.attach(screenshot, "image/png", scenario.getId());
         }
     }
