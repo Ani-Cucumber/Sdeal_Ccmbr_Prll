@@ -226,7 +226,6 @@ public class Wrap extends AbstractTestNGCucumberTests {
         longPress.addAction(new Pause(finger, Duration.ofMillis(2000)));
         longPress.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
         getDriver().perform(Collections.singletonList(longPress));
-        System.out.println();
     }
 
     // To pinch in application
